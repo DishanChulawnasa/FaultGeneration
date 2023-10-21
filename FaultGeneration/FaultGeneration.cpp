@@ -487,6 +487,7 @@ int main()
     vector<int> inputs;
     vector<int> outputs;
     vector<int> wires;
+    vector<int> allNodes;
     vector<string> testvector;
     vector<int> faultnodename;
     int value;
@@ -494,19 +495,20 @@ int main()
     const string inputFileName = "MUX32_Syn.v"; // Replace with your input Verilog file name
     const string outputFileName = "new.v";      // const string outputFileName = "EX_comb.v";   // Replace with the desired output Verilog file name
     const string newOutputFileName = "mux32fault.v";
+    const string allNodesFile = "mux32faultnodes.txt";
     const string faultoutput = "muxoutfaultnodes.txt"; // const string outputFileName = "EX_comb.v";   // Replace with the desired output Verilog file name
     // const char[] name = "new.v";
     ifstream inputFile(inputFileName);
     ofstream outputFile(outputFileName);
     ofstream newoutputFile(newOutputFileName);
     ofstream output2(faultoutput);
+    ofstream outputAllNodes(allNodesFile);
 
     numberNodes(inputFileName, inputNodes, outputNodes, wireNodes);
 
     map<string, int>::iterator itr;
     for (itr = inputNodes.begin(); itr != inputNodes.end(); itr++)
     {
-        //cout << itr->first << " " << itr->second << endl;
         inputs.push_back(itr->second);
     }
 
@@ -522,11 +524,28 @@ int main()
         wires.push_back(itr->second);
     }
 
+    allNodes.insert(allNodes.end(), inputs.begin(), inputs.end());
+    allNodes.insert(allNodes.end(), inputs.begin(), inputs.end());
+    allNodes.insert(allNodes.end(), wires.begin(), wires.end());
+
+    if (!outputAllNodes.is_open())
+    {
+        cerr << "Error: Could not create the output file." << endl;
+        return 1;
+    }
+
+    for (const auto& i : allNodes)
+    {
+        outputAllNodes << i << endl;
+    }
+
+    outputAllNodes.close();
+
     // int faults;
     //  int value;
     //   vector<int> faultnodename;
     string filename = "mux32faultnodes.txt"; // Replace with the path to your text file
-    vector<int> uniqueIntegers = ReadUniqueIntegersFromFile(inputFileName);
+    vector<int> uniqueIntegers = ReadUniqueIntegersFromFile(filename);
 
     // Use a set to remove duplicates
     set<int> uniqueInts(uniqueIntegers.begin(), uniqueIntegers.end());
@@ -562,7 +581,7 @@ int main()
 
     for (const auto& i : faultnames)
     {
-        cout << i << endl;
+        //cout << i << endl;
     }
     string modulename;
     vector<string> inputPorts;
@@ -578,6 +597,14 @@ int main()
 
     outputFile.close();
     if (remove("new.v") == 0)
+    {
+        cout << "Deleted successfully" << endl;
+    }
+    else
+    {
+        cout << "Not deleted";
+    }
+    if (remove("mux32faultnodes.txt") == 0)
     {
         cout << "Deleted successfully" << endl;
     }
